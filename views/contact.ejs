@@ -1,0 +1,35 @@
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-8">
+      <h2>Contact Lists</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">No.</th>
+            <th scope="col">Name</th>
+            <th scope="col">Phone Number</th>
+            <th scope="col">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (contacts.length === 0) { %>
+          <tr>
+            <td colspan="4">
+              <div class="alert alert-danger fw-bold" role="alert">Data contact does not exist yet.</div>
+            </td>
+          </tr>
+          <% } %> <% contacts.forEach((contact, i) => { i++ %>
+          <tr>
+            <th scope="row"><%= i++ %></th>
+            <td><%= contact.name %></td>
+            <td><%= contact.nohp %></td>
+            <td>
+              <a href="/contact/<%= contact.name %>" class="btn btn-success badge rounded-pill">Detail<i class="bi bi-info-circle ms-1"></i></a>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
