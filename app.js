@@ -1,13 +1,29 @@
 const express = require("express");
 const expressLayouts = require("express-ejs-layouts");
-const { loadContact, findContact } = require("./utils/contacts");
+const { loadContacts, findContact, addContact, checkDuplicate } = require("./utils/contacts");
+const { body, validationResult, check } = require("express-validator");
+const session = require("express-session");
+const cookieParser = require("cookie-parser");
+const flash = require("connect-flash");
 
 const app = express();
 const port = 3000;
 
 app.set("view engine", "ejs");
-app.use(expressLayouts); // Third-party middleware
-app.use(express.static("public")); // Built-in middleware
+app.use(expressLayouts);
+app.use(express.static("public"));
+app.use(express.urlencoded({ extended: true }));
+
+app.use(cookieParser("secret"));
+app.use(
+  session({
+    cookie: { maxAge: 6000 },
+    secret: "secret",
+    resave: true,
+    saveUninitialized: true,
+  })
+);
+app.use(flash());
 
 app.get("/", (req, res) => {
   // res.send("Hello, World!");
@@ -34,14 +50,55 @@ app.get("/about", (req, res) => {
 });
 
 app.get("/contact", (req, res) => {
-  const contacts = loadContact();
+  const contacts = loadContacts();
 
   res.render("contact", {
     title: "Contact Page",
     layout: "layouts/main",
     contacts,
+    msg: req.flash("msg"),
   });
 });
+
+app.get("/contact/add", (req, res) => {
+  res.render("add-contact", {
+    title: "Add Contact Form",
+    layout: "layouts/main",
+  });
+});
+
+app.post(
+  "/contact",
+  [
+    body("name").custom((value) => {
+      const duplicate = checkDuplicate(value);
+
+      if (duplicate) {
+        throw new Error("Name has already taken. Please use another name!");
+      }
+
+      return true;
+    }),
+    check("email", "Invalid email format. Please input a valid email!").isEmail(),
+    check("nohp", "Invalid phone number format. Please input a valid phone number!").isMobilePhone("id-ID"),
+  ],
+  (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      // return res.status(400).json({ errors: errors.array() });
+      res.render("add-contact", {
+        title: "Add Contact Form",
+        layout: "layouts/main",
+        errors: errors.array(),
+      });
+    } else {
+      addContact(req.body);
+      req.flash("msg", "Data contact successfully added!");
+      res.redirect("/contact");
+    }
+  }
+);
 
 app.get("/contact/:name", (req, res) => {
   const contact = findContact(req.params.name);
