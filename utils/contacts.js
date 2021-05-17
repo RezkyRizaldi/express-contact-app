@@ -25,7 +25,7 @@ const findContact = (name) => {
 };
 
 const saveContacts = (contacts) => {
-  fs.writeFileSync("data/contact.json", JSON.stringify(contacts, null, 2));
+  fs.writeFileSync("data/contacts.json", JSON.stringify(contacts, null, 2));
 };
 
 const addContact = (contact) => {
@@ -40,4 +40,20 @@ const checkDuplicate = (name) => {
   return contacts.find((contact) => contact.name === name);
 };
 
-module.exports = { loadContacts, findContact, addContact, checkDuplicate };
+const deleteContact = (name) => {
+  const contacts = loadContacts();
+  const filteredContact = contacts.filter((contact) => contact.name !== name);
+
+  saveContacts(filteredContact);
+};
+
+const updateContacts = (newContact) => {
+  const contacts = loadContacts();
+  const filteredContact = contacts.filter((contact) => contact.name !== newContact.oldName);
+
+  delete newContact.oldName;
+  filteredContact.push(newContact);
+  saveContacts(filteredContact);
+};
+
+module.exports = { loadContacts, findContact, addContact, checkDuplicate, deleteContact, updateContacts };

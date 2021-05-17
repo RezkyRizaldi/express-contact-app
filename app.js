@@ -1,6 +1,6 @@
 const express = require("express");
 const expressLayouts = require("express-ejs-layouts");
-const { loadContacts, findContact, addContact, checkDuplicate } = require("./utils/contacts");
+const { loadContacts, findContact, addContact, checkDuplicate, deleteContact, updateContacts } = require("./utils/contacts");
 const { body, validationResult, check } = require("express-validator");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
@@ -95,6 +95,61 @@ app.post(
     } else {
       addContact(req.body);
       req.flash("msg", "Data contact successfully added!");
+      res.redirect("/contact");
+    }
+  }
+);
+
+app.get("/contact/delete/:name", (req, res) => {
+  const contact = findContact(req.params.name);
+
+  if (!contact) {
+    res.status(404);
+    res.send("<h1>404</h1>");
+  } else {
+    deleteContact(req.params.name);
+    req.flash("msg", "Data contact successfully deleted!");
+    res.redirect("/contact");
+  }
+});
+
+app.get("/contact/edit/:name", (req, res) => {
+  const contact = findContact(req.params.name);
+  res.render("edit-contact", {
+    title: "Edit Contact Form",
+    layout: "layouts/main",
+    contact,
+  });
+});
+
+app.post(
+  "/contact/update",
+  [
+    body("name").custom((value, { req }) => {
+      const duplicate = checkDuplicate(value);
+
+      if (value !== req.body.oldName && duplicate) {
+        throw new Error("Name has already taken. Please use another name!");
+      }
+
+      return true;
+    }),
+    check("email", "Invalid email format. Please input a valid email!").isEmail(),
+    check("nohp", "Invalid phone number format. Please input a valid phone number!").isMobilePhone("id-ID"),
+  ],
+  (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      res.render("edit-contact", {
+        title: "Edit Contact Form",
+        layout: "layouts/main",
+        errors: errors.array(),
+        contact: req.body,
+      });
+    } else {
+      updateContacts(req.body);
+      req.flash("msg", "Data contact successfully updated!");
       res.redirect("/contact");
     }
   }

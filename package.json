@@ -1,5 +1,12 @@
 {
   "name": "express-contact-app",
+  "displayName": "Express Contact App",
+  "categories": [
+    "Testing"
+  ],
+  "markdown": "github",
+  "preview": true,
+  "publisher": "Muhamad Rezky Rizaldi",
   "version": "1.0.0",
   "description": "Express Simple Contact App",
   "main": "app.js",
@@ -17,12 +24,28 @@
     "JavaScript",
     "Contact-App"
   ],
-  "author": "Muhamad Rezky Rizaldi",
+  "author": {
+    "name": "Muhamad Rezky Rizaldi",
+    "email": "rezkyrizaldi30@gmail.com",
+    "url": "https://github.com/RezkyRizaldi"
+  },
+  "engines": {
+    "node": "^14.17.0",
+    "vscode": "^1.22.0"
+  },
+  "qna": "marketplace",
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie >= 8"
+  ],
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/RezkyRizaldi/express-contact-app/issues"
+    "url": "https://github.com/RezkyRizaldi/express-contact-app/issues",
+    "email": "rezkyrizaldi30@gmail.com"
   },
-  "homepage": "https://github.com/RezkyRizaldi/express-contact-app#readme",
+  "homepage": "https://github.com/RezkyRizaldi/express-contact-app",
+  "readme": "https://github.com/RezkyRizaldi/express-contact-app#readme",
   "dependencies": {
     "chalk": "^4.1.0",
     "connect-flash": "^0.1.1",
