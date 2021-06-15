@@ -6,6 +6,9 @@ const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const flash = require("connect-flash");
 
+require("./utils/db");
+const Contact = require("./model/contact");
+
 const app = express();
 const port = 3000;
 
@@ -49,8 +52,9 @@ app.get("/about", (req, res) => {
   });
 });
 
-app.get("/contact", (req, res) => {
-  const contacts = loadContacts();
+app.get("/contact", async (req, res) => {
+  // const contacts = loadContacts();
+  const contacts = await Contact.find();
 
   res.render("contact", {
     title: "Contact Page",
@@ -155,8 +159,9 @@ app.post(
   }
 );
 
-app.get("/contact/:name", (req, res) => {
-  const contact = findContact(req.params.name);
+app.get("/contact/:name", async (req, res) => {
+  // const contact = findContact(req.params.name);
+  const contact = await Contact.findOne({ name: req.params.name });
 
   res.render("detail", {
     title: "Detail Page",
