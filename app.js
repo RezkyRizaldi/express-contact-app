@@ -111,7 +111,7 @@ app.post(
 );
 
 app.delete("/contact", (req, res) => {
-  Contact.deleteOne({ name: req.params.name }).then((result) => {
+  Contact.deleteOne({ _id: req.body._id }).then((result) => {
     req.flash("msg", "Data contact successfully deleted!");
     res.redirect("/contact");
   });
