@@ -3,6 +3,7 @@ const express = require("express");
 const expressLayouts = require("express-ejs-layouts");
 const { loadContacts, findContact, addContact, checkDuplicate, deleteContact, updateContacts } = require("./utils/contacts");
 const { body, validationResult, check } = require("express-validator");
+const methodOverride = require("method-override");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const flash = require("connect-flash");
@@ -13,6 +14,7 @@ const Contact = require("./model/contact");
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.use(methodOverride("_method"));
 app.set("view engine", "ejs");
 app.use(expressLayouts);
 app.use(express.static("public"));
@@ -75,8 +77,9 @@ app.get("/contact/add", (req, res) => {
 app.post(
   "/contact",
   [
-    body("name").custom((value) => {
-      const duplicate = checkDuplicate(value);
+    body("name").custom(async (value) => {
+      // const duplicate = checkDuplicate(value);
+      const duplicate = await Contact.findOne({ name: value });
 
       if (duplicate) {
         throw new Error("Name has already taken. Please use another name!");
@@ -98,28 +101,26 @@ app.post(
         errors: errors.array(),
       });
     } else {
-      addContact(req.body);
-      req.flash("msg", "Data contact successfully added!");
-      res.redirect("/contact");
+      // addContact(req.body);
+      Contact.insertMany(req.body, (error, result) => {
+        req.flash("msg", "Data contact successfully added!");
+        res.redirect("/contact");
+      });
     }
   }
 );
 
-app.get("/contact/delete/:name", (req, res) => {
-  const contact = findContact(req.params.name);
-
-  if (!contact) {
-    res.status(404);
-    res.send("<h1>404</h1>");
-  } else {
-    deleteContact(req.params.name);
+app.delete("/contact", (req, res) => {
+  Contact.deleteOne({ name: req.params.name }).then((result) => {
     req.flash("msg", "Data contact successfully deleted!");
     res.redirect("/contact");
-  }
+  });
 });
 
-app.get("/contact/edit/:name", (req, res) => {
-  const contact = findContact(req.params.name);
+app.get("/contact/edit/:name", async (req, res) => {
+  // const contact = findContact(req.params.name);
+  const contact = await Contact.findOne({ name: req.params.name });
+
   res.render("edit-contact", {
     title: "Edit Contact Form",
     layout: "layouts/main",
@@ -127,11 +128,12 @@ app.get("/contact/edit/:name", (req, res) => {
   });
 });
 
-app.post(
-  "/contact/update",
+app.put(
+  "/contact",
   [
-    body("name").custom((value, { req }) => {
-      const duplicate = checkDuplicate(value);
+    body("name").custom(async (value, { req }) => {
+      // const duplicate = checkDuplicate(value);
+      const duplicate = await Contact.findOne({ name: value });
 
       if (value !== req.body.oldName && duplicate) {
         throw new Error("Name has already taken. Please use another name!");
@@ -153,9 +155,20 @@ app.post(
         contact: req.body,
       });
     } else {
-      updateContacts(req.body);
-      req.flash("msg", "Data contact successfully updated!");
-      res.redirect("/contact");
+      // updateContacts(req.body);
+      Contact.updateOne(
+        { _id: req.body._id },
+        {
+          $set: {
+            name: req.body.name,
+            email: req.body.email,
+            nohp: req.body.nohp,
+          },
+        }
+      ).then((result) => {
+        req.flash("msg", "Data contact successfully updated!");
+        res.redirect("/contact");
+      });
     }
   }
 );
